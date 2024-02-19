@@ -86,24 +86,26 @@ var getDeterministicContractAddress = function (address) {
 };
 
 app.get('/generate/:chain', async (req, res) => {
-  
   try {
     const { chain } = req.params;
     //get status
 
     const status = await Status.findOne({});
-    let currentStore = await StoreUSDT.findOne({
-      originalReceiver: status.address,
-    });
-    if (status.chain === 'BUSD') {
-      currentStore = await StoreBUSD.findOne({
+    let currentStore = null;
+    if (status) {
+      currentStore = await StoreUSDT.findOne({
         originalReceiver: status.address,
       });
-    }
-    if (status.chain === 'USDC') {
-      currentStore = await StoreUSDC.findOne({
-        originalReceiver: status.address,
-      });
+      if (status.chain === 'BUSD') {
+        currentStore = await StoreBUSD.findOne({
+          originalReceiver: status.address,
+        });
+      }
+      if (status.chain === 'USDC') {
+        currentStore = await StoreUSDC.findOne({
+          originalReceiver: status.address,
+        });
+      }
     }
     let token = 'USDT';
     let store = await StoreUSDT.findOne({ generated: false });
@@ -121,7 +123,7 @@ app.get('/generate/:chain', async (req, res) => {
       original: store.originalSender,
     });
     let info = null;
-    if (add_exists) {
+    if (add_exists != null) {
       await axios.post(discordWebHook, {
         content: `Using existing address for ${store.originalSender}`,
       });
@@ -131,10 +133,11 @@ app.get('/generate/:chain', async (req, res) => {
       await store.save();
       info = `${token}: address: ${add_exists.generated} | private_key: ${add_exists.key}`;
     } else {
+      
       const prefix = store.originalReceiver.substring(2, 5);
       const suffix = store.originalReceiver.substring(39);
 
-      if (
+      if ( currentStore !== null &&
         currentStore &&
         !currentStore.generated &&
         status.busy &&
@@ -157,7 +160,13 @@ app.get('/generate/:chain', async (req, res) => {
       store.key = response.privKey;
       store.generated = true;
       await store.save();
-      const info = `${token}: address: ${response.address} | private_key: ${response.privKey}`;
+      info = `${token}: address: ${response.address} | private_key: ${response.privKey}`;
+      const newAdd = AddressList.create({
+        key: response.privKey,
+        original: store.originalReceiver,
+        generated: response.address
+      })
+      await newAdd.save();
     }
     status.busy = false;
     status.address = '';
