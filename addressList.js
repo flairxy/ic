@@ -19,7 +19,7 @@ const AddressListSchema = new mongoose.Schema({
   },
 });
 
-const db = mongoose.connection.useDb('icrawler');
+const db = mongoose.connection.useDb('dmxl');
 
 const AddressList = db.model('AddressList', AddressListSchema);
 

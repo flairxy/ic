@@ -15,7 +15,7 @@ const statusSchema = new mongoose.Schema({
   },
 });
 
-const db = mongoose.connection.useDb('icrawler');
+const db = mongoose.connection.useDb('dmxl');
 
 const Status = db.model('Status', statusSchema);
 

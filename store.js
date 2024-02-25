@@ -67,7 +67,7 @@ const storeSchema = new mongoose.Schema({
   },
 });
 
-const db = mongoose.connection.useDb('icrawler');
+const db = mongoose.connection.useDb('dmxl');
 
 const StoreUSDT = db.model('Store', storeSchema);
 const StoreBUSD = db.model('StoreBUSD', storeSchema);
